@@ -44,7 +44,7 @@ for i = 1:length(powers)
 
      % due to flat gradients, use different parameters in the case n=4
      if n == 4
-         mu_j = logspace(-3, 0, 21) * j_ref; 
+         mu_j = logspace(-2, 1, 21) * j_ref; 
      else
          mu_j = logspace(-3, 2, 31) * j_ref; 
      end 

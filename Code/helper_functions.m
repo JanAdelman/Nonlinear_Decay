@@ -31,16 +31,16 @@ classdef helper_functions
 
 
         %% reaction diffusion equation with non-linear decay and source 
-        % D*C''(x) - p*H(x) + d*C(x)^n = 0
-        function dydx = odefun_non_lin(x, y, c, n, D, p, d, ncS)
+        % D*C''(x) - p*H(x) + d*C(x)^n/C_ref^(n-1) = 0
+        function dydx = odefun_non_lin(x, y, c, n, D, p, d, ncS, C_ref)
             
             dC = -y(2,:) / D(c); % mass flux: j = -D*grad(C) 
-            dj = p(c) * (c <= ncS) - d(c) * y(1,:).^n; % conservation of mass: div(j) = p*H(-x) - d*C
+            dj = p(c) * (c <= ncS) - d(c) * y(1,:).^n / C_ref^(n-1); % conservation of mass: div(j) = p*H(-x) - d*C^n/C_ref^(n-1)
             dydx = [dC; dj];
             
         end
 
-        % Dirichlet BC at c(0) = c0 and zero flux at Lp 
+        % Dirichlet BC at x=0 and zero flux at x=LP
         function res = bcfun_dirichlet(ya, yb, nc, c0)
             
             res = ya(:);
@@ -54,7 +54,7 @@ classdef helper_functions
             
         end
         
-        % Flx BC at c(0) and zero flux at Lp 
+        % Flux BC at x=0 and zero flux at x=LP
         function res = bcfun_flux(ya, yb, nc, j)
             
             res = ya(:);
@@ -68,7 +68,7 @@ classdef helper_functions
             
         end
 
-        % initial guess non-linear decay 
+        % initial guess for non-linear decay 
         function y = y0_non_lin(x, c)
 
             y = [0.5; 0];
@@ -76,11 +76,11 @@ classdef helper_functions
         end
         
         %% ODE without source term 
-        % D*C''(x) + d*C(x)^n = 0
-        function dydx = odefun_non_lin_no_source(x, y, c, n, D, d)
+        % D*C''(x) + d*C(x)^n/C_ref^(n-1) = 0
+        function dydx = odefun_non_lin_no_source(x, y, c, n, D, d, C_ref)
             
             dC = -y(2,:) / D(c); % mass flux: j = -D*grad(C) 
-            dj = - d(c) * y(1,:).^n; % conservation of mass: div(j) = p*H(-x) - d*C
+            dj = - d(c) * y(1,:).^n / C_ref^(n-1); % conservation of mass: div(j) = p*H(-x) - d*C^n/C_ref^(n-1)
             dydx = [dC; dj];
             
         end
@@ -142,14 +142,14 @@ classdef helper_functions
         
         %% analytical solution to the equation:
         % D*C''(x) + d*C(x)^n = 0
-        function c = get_readout_conc_non_linear(x, n, c0, mu_lambda, c_ref)
+        function c = get_readout_conc_non_linear(x, n, c0, mu_lambda, C_ref)
     
             % get the concentration profile for non-linear decay. 
     
             % C(0)= c_0
             m = 2/(n - 1);
-            lambda_m = mu_lambda*sqrt(1 + 1/m)*(c_ref/c0)^(1/m);
-            c = c0*(1+ x/(m*lambda_m)).^(-m);  
+            lambda_m = mu_lambda*sqrt(1 + 1/m)*(C_ref/c0)^(1/m);
+            c = c0*(1 + x/(m*lambda_m)).^(-m);  
         
         end
 
